@@ -70,7 +70,7 @@ foreach ($lines as $line)
 }
 
 // Connect to the TRAC database
-$db = new SQLite3($pathDB);
+$db = new PDO("sqlite:$pathDB");
 
 echo "Converting table 'ticket_change'...\n";
 
@@ -78,17 +78,21 @@ echo "Converting table 'ticket_change'...\n";
 $result = $db->query('SELECT * FROM ticket_change'); 
 
 $i = 1;
-while ($row = $result->fetchArray())
-{			
+foreach ($result as $row)
+{
 	$i++;
-	$oldValue = $db->escapeString($row['oldvalue']);
-	$newValue = $db->escapeString($row['newvalue']);
-	
 	// Only update when there is something to be changed, since SQLite isn't the fastest beast around
-	if (convertSVNIDToGitID($oldValue, $lookupTable, $nrHashCharacters) || convertSVNIDToGitID($newValue, $lookupTable, $nrHashCharacters))
+	if (convertSVNIDToGitID($row['oldvalue'], $lookupTable, $nrHashCharacters) || convertSVNIDToGitID($row['newvalue'], $lookupTable, $nrHashCharacters))
 	{	
-		$query = "UPDATE ticket_change SET oldvalue='$oldValue', newvalue='$newValue' WHERE ticket = '${row['ticket']}' AND time = '${row['time']}' AND author='${row['author']}' AND field='${row['field']}'";
-		if (!$db->exec($query))
+		$query = $db->prepare("UPDATE ticket_change SET oldvalue=?, newvalue=? WHERE ticket = ? AND time = ? AND author=? AND field=?");
+		$query->bindParam(1, $row['oldvalue']);
+		$query->bindParam(2, $row['newvalue']);
+		$query->bindParam(3, $row['ticket']);
+		$query->bindParam(4, $row['time']);
+		$query->bindParam(5, $row['author']);
+		$query->bindParam(6, $row['field']);
+
+		if (!$query->execute())
 		{
 			echo "Query failed: " . $query . "\n";
 		}		
@@ -104,14 +108,19 @@ echo "Converting table 'ticket'...\n";
 $i = 1;
 
 $result = $db->query('SELECT * FROM ticket');
-while ($row = $result->fetchArray())
+foreach ($result as $row)
 {
-	$description = $db->escapeString($row['description']);
-	if (convertSVNIDToGitID($description, $lookupTable, $nrHashCharacters))
+	if (convertSVNIDToGitID($row['description'], $lookupTable, $nrHashCharacters))
 	{	
-		$query = "UPDATE ticket_change SET description='$description' WHERE id = " . $row['id'];
-		$db->exec($query);
-		
+		$query = $db->prepare("UPDATE ticket_change SET description=? WHERE id = ?");
+		$query->bindParam(1, $row['description']);
+		$query->bindParam(2, $row['id']);
+
+		if (!$query->execute())
+		{
+			echo "Query failed: " . $query . "\n";
+		}
+
 		echo "Updated ticket $i\n";
 	}
 }
