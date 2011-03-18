@@ -21,7 +21,7 @@ $pathDB = "/path/to/your/trac.db";
 $pathLookupTable = "lookupTable.txt";
 
 // Number of characters for the changeset hash. This has to be 4 <= nr <= 40
-$nrHashCharacters = 8;
+$nrHashCharacters = 40;
 
 /* END CONFIGURATION */
 
