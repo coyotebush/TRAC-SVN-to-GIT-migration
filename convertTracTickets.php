@@ -49,7 +49,7 @@ function convertSVNIDToGitID(&$text, $lookupTable, $nrHashCharacters)
 			}
 			$gitID = substr($lookupTable[$svnID], 0, $nrHashCharacters);
 			
-			$text = str_replace('[' . $svnID . ']', '[' . $gitID . '] (SVN r' . $svnID . ')', $text);
+			$text = str_replace('[' . $svnID . ']', '[' . $gitID . '] (SVN [changeset:' . $svnID . '/oldsvn r' . $svnID . '])', $text);
 		}
 		
 		return true;
