@@ -14,8 +14,17 @@ error_reporting(E_ALL);
 
 /* CONFIGURATION */
 
-// Path to trac DB
-$pathDB = "/path/to/your/trac.db";
+// String to open DB connection, in a format PDO accepts
+//f.ex
+// "pgsql:dbname=pdo;host=localhost"
+// "sqlite:/path/to/database.sdb"
+// "mysql:host=$hostname;dbname=mysql"
+$DBString = "sqlite:/home/jens/tractest/db/trac.db";
+//db username and password, leave blank for sqlite
+$DBUser = "";
+$DBPasswd = "";
+
+
 
 // Path to lookup table (SVN revision number to GIT revion hash)
 $pathLookupTable = "lookupTable.txt";
@@ -70,7 +79,7 @@ foreach ($lines as $line)
 }
 
 // Connect to the TRAC database
-$db = new PDO("sqlite:$pathDB");
+$db = new PDO($DBString,$DBUser,$DBPasswd);
 
 echo "Converting table 'ticket_change'...\n";
 
